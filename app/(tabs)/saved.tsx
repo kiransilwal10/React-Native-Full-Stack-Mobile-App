@@ -3,9 +3,9 @@ import React from 'react';
 
 const Saved =()=>{
     return (
-        <view>
-            <text>Saved</text>
-        </view>
+        <View>
+            <Text>Saved</Text>
+        </View>
     )
 }
 export default Saved
