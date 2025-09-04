@@ -6,6 +6,9 @@ import {fetchMovies} from "@/services/api";
 import MovieCard from "@/components/MovieCard";
 import SearchBar from "@/components/SearchBar";
 import {icons} from "@/constants/icons";
+import {useEffect} from "react";
+import {updateSearchCount} from "@/services/appwrite";
+
 
 
 const Search =() =>{
@@ -16,11 +19,27 @@ const Search =() =>{
     const {
         data: movies,
         loading,
-        error
+        error,
+        refetch: loadMovies,
+        reset,
 
     } = useFetch(() => fetchMovies({
     query: searchQuery
         }), false)
+
+    useEffect(() => {
+        updateSearchCount(searchQuery, movies[0]);
+
+        const timeoutId = setTimeout(async () => {
+
+            if (searchQuery.trim()) {
+                await loadMovies();
+            } else {
+                reset();
+            }
+        }, 500);
+        return () => clearTimeout(timeoutId);
+    }, [searchQuery]);
 
 
     return (
@@ -46,7 +65,10 @@ const Search =() =>{
 
                         </View>
                     <View className="my-5">
-                        <SearchBar placeholder="Search movies ..." />
+                        <SearchBar placeholder="Search movies ..."
+                                   value={searchQuery}
+                                   onChangeText={(text: string) => setSearchQuery(text) } />
+
                     </View>
 
                     { loading && (
@@ -60,14 +82,24 @@ const Search =() =>{
                         )}
 
                     {
-                        !loading && !error && 'SEARCH TERM'.trim()
+                        !loading && !error && searchQuery.trim()
                         && movies ?.length > 0 && (
                         <Text className="text-xl text-white font-bold">
-                        Search Results for{''}
-                        <Text className="text-accent">SEARCH TERM</Text>
+                        Search Results for{' '}
+                        <Text className="text-accent">{searchQuery}</Text>
                         </Text>
                         )}
          </>
+                }
+                ListEmptyComponent={
+                !loading && !error ? (
+                    <View className="mt-10 px-5">
+                        <Text className="text-center text-gray-500">
+                            {searchQuery.trim() ? 'No movies founds' : 'Search for a movie'}
+                        </Text>
+                    </View>
+                ) : null
+
                 }
                       />
         </View>
